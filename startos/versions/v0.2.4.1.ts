@@ -2,7 +2,7 @@ import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
 import { load } from 'js-yaml'
 import { envFile } from '../file-models/env'
 import { readFile, rmdir } from 'fs/promises'
-import { envDefaults, mainnet, testnet } from '../utils'
+import { envDefaults, getStratumIpv4Address, mainnet, testnet } from '../utils'
 import { sdk } from '../sdk'
 
 export const v_0_2_4_1 = VersionInfo.of({
@@ -14,16 +14,16 @@ export const v_0_2_4_1 = VersionInfo.of({
       const {
         'zmq-enabled': zmqEnabled,
         'pool-identifier': POOL_IDENTIFIER,
-        'pool-address': poolDisplayUrl,
         bitcoind: { type },
       } = load(await readFile('/root/start9/config.yaml', 'utf-8')) as {
         'zmq-enabled': boolean
         'pool-identifier': string
-        'pool-address': string | null
         bitcoind: {
           type: 'mainnet' | 'testnet'
         }
       }
+
+      const ipv4Address = await getStratumIpv4Address(effects)
 
       // migrate to new structure
       await Promise.all([
@@ -37,7 +37,11 @@ export const v_0_2_4_1 = VersionInfo.of({
             : undefined,
           POOL_IDENTIFIER,
         }),
-        sdk.store.setOwn(effects, sdk.StorePath.poolDisplayUrl, poolDisplayUrl),
+        sdk.store.setOwn(
+          effects,
+          sdk.StorePath.stratumDisplayAddress,
+          ipv4Address,
+        ),
       ])
 
       // remove old start9 dir

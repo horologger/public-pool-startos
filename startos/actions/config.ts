@@ -1,7 +1,6 @@
 import { sdk } from '../sdk'
 import { envFile } from '../file-models/env'
 import { utils } from '@start9labs/start-sdk'
-import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
 
 const { InputSpec, Value } = sdk
 
@@ -22,11 +21,11 @@ export const inputSpec = InputSpec.of({
     patterns: [utils.Patterns.ascii],
   }),
   poolDisplayUrl: Value.dynamicSelect(async ({ effects }) => {
-    const httpInterface = await sdk.serviceInterface
+    const stratumInterface = await sdk.serviceInterface
       .getOwn(effects, 'stratum')
       .const()
 
-    const urls = httpInterface?.addressInfo?.urls || []
+    const urls = stratumInterface?.addressInfo?.urls || []
 
     return {
       name: 'Server Display URL',
@@ -79,7 +78,7 @@ export const config = sdk.Action.withInput(
       }),
       sdk.store.setOwn(
         effects,
-        sdk.StorePath.poolDisplayUrl,
+        sdk.StorePath.stratumDisplayAddress,
         input.poolDisplayUrl,
       ),
     ])

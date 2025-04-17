@@ -2,6 +2,7 @@ import { sdk } from './sdk'
 import { T } from '@start9labs/start-sdk'
 import { uiPort } from './utils'
 import { envFile } from './file-models/env'
+import * as fs from 'node:fs/promises'
 
 export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
@@ -16,9 +17,29 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
 
   const env = (await envFile.read.const(effects))!
 
-  // @TODO Remoco did the following, depending on network
-  //   mkdir -p /public-pool-data/mainnet
-  //   ln -s /public-pool-data/mainnet /public-pool/DB
+  const uiSub = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'public-pool' },
+    'ui',
+  )
+
+  const stratumSub = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'public-pool' },
+    'stratum',
+  )
+  await fs.cp(envFile.path, `${stratumSub.rootfs}/public-pool/.env`)
+
+  // ** set stratum display url **
+  sdk.store
+    .getOwn(effects, sdk.StorePath.stratumDisplayAddress)
+    .onChange(async (url) => {
+      await uiSub.exec([
+        'sh',
+        '-c',
+        `sed -i "s/<Stratum URL>/${url}/" "$(find /var/www/html/main.*.js)"`,
+      ])
+    })
 
   /**
    * ======================== Additional Health Checks (optional) ========================
@@ -34,26 +55,33 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
    *
    * Each daemon defines its own health check, which can optionally be exposed to the user.
    */
-  return sdk.Daemons.of(effects, started, additionalChecks).addDaemon(
-    'primary',
-    {
-      subcontainer: { imageId: 'public-pool' },
-      // @TODO command here is a mutant hybrid between github docs and Remco code in entrypoint. How to start the service with .nv location specified?
-      command: [
-        '/usr/local/bin/node',
-        '/public-pool/dist/main.js',
-        '-v',
-        '.env:/public-pool/.env',
-      ],
+  return sdk.Daemons.of(effects, started, additionalChecks)
+    .addDaemon('stratum', {
+      subcontainer: stratumSub,
+      command: ['/usr/local/bin/node', '/public-pool/dist/main.js'],
       mounts: sdk.Mounts.of()
-        .addVolume('main', null, '/public-pool-data', false)
+        .addVolume('main', env.NETWORK, '/public-pool/DB', false)
         .addDependency(
           env.NETWORK === 'mainnet' ? 'bitcoind' : 'bitcoind-testnet',
           'main',
           null,
-          `/public-pool-data/${env.NETWORK}`,
+          `/.bitcoin`,
           true,
         ),
+      ready: {
+        display: 'Stratum Server',
+        fn: () =>
+          sdk.healthCheck.checkPortListening(effects, uiPort, {
+            successMessage: 'Stratum server is ready',
+            errorMessage: 'Stratum server is not ready',
+          }),
+      },
+      requires: [],
+    })
+    .addDaemon('ui', {
+      subcontainer: uiSub,
+      command: ['nginx', '-g', 'daemon off;'],
+      mounts: sdk.Mounts.of(),
       ready: {
         display: 'Web Interface',
         fn: () =>
@@ -63,6 +91,5 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
           }),
       },
       requires: [],
-    },
-  )
+    })
 })

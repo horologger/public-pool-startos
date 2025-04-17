@@ -1,8 +1,8 @@
 FROM node:20-bookworm-slim AS build
 
 # Public Pool repo does not use versions/tags yet, point directly to commit sha
-ARG PUBLIC_POOL_SHA=4282233d2f11ceecbd0d142e8292ccc9c37ea999
-ARG PUBLIC_POOL_UI_SHA=80081e337d3af829b0edf3990ad97ea430bd73d4
+ARG PUBLIC_POOL_SHA=fd775965e5f90f0814302edee8690839af67a603
+ARG PUBLIC_POOL_UI_SHA=00954f46866cc23c1b04d34a13ffb4f2cc8f9bbb
 
 RUN \
     apt-get update && \
@@ -18,15 +18,9 @@ RUN \
     cd public-pool && \
     git checkout ${PUBLIC_POOL_SHA}
 
-# apply patch for rpc-bitcoin (see: https://github.com/vansergen/rpc-bitcoin/pull/65)
-COPY patches/rpc-bitcoin+2.0.0.patch /build/public-pool/patches/rpc-bitcoin+2.0.0.patch
-
 RUN \
     cd public-pool && \
     npm ci && \
-    # apply patch for rpc-bitcoin (see: https://github.com/vansergen/rpc-bitcoin/pull/65)
-    npm i patch-package && \
-    npx patch-package && \
     npm run build
 
 RUN \
@@ -35,8 +29,8 @@ RUN \
     git checkout ${PUBLIC_POOL_UI_SHA}
 
 # patch environment.prod.ts for self-hosting
-COPY patches/environment.prod.ts /build/public-pool-ui/src/environments/environment.prod.ts
-COPY patches/public-pool-ui.patch /build/public-pool-ui/public-pool-ui.patch
+COPY assets/patches/environment.prod.ts /build/public-pool-ui/src/environments/environment.prod.ts
+COPY assets/patches/public-pool-ui.patch /build/public-pool-ui/public-pool-ui.patch
 
 RUN \
     cd public-pool-ui && \
@@ -49,13 +43,17 @@ FROM node:20-bookworm-slim
 
 ENV NODE_ENV=production
 
+WORKDIR /public-pool
+
 RUN \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    nginx && \
     apt clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-WORKDIR /public-pool
+COPY ./assets/nginx.conf /etc/nginx/sites-available/default
+
 COPY --from=build /build/public-pool/node_modules ./node_modules
 COPY --from=build /build/public-pool/dist ./dist
 

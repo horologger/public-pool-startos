@@ -1,3 +1,6 @@
+import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
+import { sdk } from './sdk'
+
 export const uiPort = 80
 
 const MAINNET_BITCOIN_RPC_URL = 'bitcoind.startos' as const
@@ -52,4 +55,16 @@ export function dotenvToJson<
         return acc
       }, {} as T)
   )
+}
+
+export async function getStratumIpv4Address(effects: Effects) {
+  const stratumInterface = await sdk.serviceInterface
+    .getOwn(effects, 'stratum')
+    .const()
+
+  const address = stratumInterface?.addressInfo?.ipv4Urls?.[0]
+
+  if (!address) throw 'No IPv4 addresses'
+
+  return address
 }

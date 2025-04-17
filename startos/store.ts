@@ -1,11 +1,11 @@
 import { setupExposeStore } from '@start9labs/start-sdk'
 
 export type Store = {
-  poolDisplayUrl: string | null
+  stratumDisplayAddress: string | null
 }
 
 export const initStore: Store = {
-  poolDisplayUrl: null,
+  stratumDisplayAddress: null,
 }
 
 export const exposedStore = setupExposeStore<Store>(() => [])
