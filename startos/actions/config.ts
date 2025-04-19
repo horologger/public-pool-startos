@@ -1,6 +1,7 @@
 import { sdk } from '../sdk'
 import { envFile } from '../file-models/env'
 import { utils } from '@start9labs/start-sdk'
+import { mainnet, testnet } from '../utils'
 
 const { InputSpec, Value } = sdk
 
@@ -72,9 +73,16 @@ export const config = sdk.Action.withInput(
 
   // the execution function
   async ({ effects, input }) => {
+    const { NETWORK } = (await envFile.read.const(effects))!
+
     await Promise.all([
       envFile.merge(effects, {
         POOL_IDENTIFIER: input.POOL_IDENTIFIER,
+        BITCOIN_ZMQ_HOST: input.zmqEnabled
+          ? NETWORK === 'mainnet'
+            ? mainnet.BITCOIN_ZMQ_HOST
+            : testnet.BITCOIN_ZMQ_HOST
+          : undefined,
       }),
       sdk.store.setOwn(
         effects,

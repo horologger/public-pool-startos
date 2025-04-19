@@ -1,6 +1,6 @@
 import { sdk } from './sdk'
 import { T } from '@start9labs/start-sdk'
-import { uiPort } from './utils'
+import { envDefaults, uiPort } from './utils'
 import { envFile } from './file-models/env'
 import * as fs from 'node:fs/promises'
 
@@ -17,20 +17,32 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
 
   const env = (await envFile.read.const(effects))!
 
-  const uiSub = await sdk.SubContainer.of(
-    effects,
-    { imageId: 'public-pool' },
-    'ui',
-  )
-
+  // ** Stratum subcontainer **
   const stratumSub = await sdk.SubContainer.of(
     effects,
     { imageId: 'public-pool' },
+    sdk.Mounts.of()
+      .addVolume('main', env.NETWORK, '/public-pool/DB', false)
+      .addDependency(
+        env.NETWORK === 'mainnet' ? 'bitcoind' : 'bitcoind-testnet',
+        'main',
+        null,
+        `/.bitcoin`,
+        true,
+      ),
     'stratum',
   )
+  // copy .env to proper place
   await fs.cp(envFile.path, `${stratumSub.rootfs}/public-pool/.env`)
 
-  // ** set stratum display url **
+  // ** UI subcontainer **
+  const uiSub = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'public-pool' },
+    null,
+    'ui',
+  )
+  // set desired Stratum URL for display in the UI
   sdk.store
     .getOwn(effects, sdk.StorePath.stratumDisplayAddress)
     .onChange(async (url) => {
@@ -59,29 +71,23 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addDaemon('stratum', {
       subcontainer: stratumSub,
       command: ['/usr/local/bin/node', '/public-pool/dist/main.js'],
-      mounts: sdk.Mounts.of()
-        .addVolume('main', env.NETWORK, '/public-pool/DB', false)
-        .addDependency(
-          env.NETWORK === 'mainnet' ? 'bitcoind' : 'bitcoind-testnet',
-          'main',
-          null,
-          `/.bitcoin`,
-          true,
-        ),
       ready: {
         display: 'Stratum Server',
         fn: () =>
-          sdk.healthCheck.checkPortListening(effects, uiPort, {
-            successMessage: 'Stratum server is ready',
-            errorMessage: 'Stratum server is not ready',
-          }),
+          sdk.healthCheck.checkPortListening(
+            effects,
+            envDefaults.STRATUM_PORT,
+            {
+              successMessage: 'Stratum server is ready',
+              errorMessage: 'Stratum server is not ready',
+            },
+          ),
       },
       requires: [],
     })
     .addDaemon('ui', {
       subcontainer: uiSub,
       command: ['nginx', '-g', 'daemon off;'],
-      mounts: sdk.Mounts.of(),
       ready: {
         display: 'Web Interface',
         fn: () =>

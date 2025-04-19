@@ -1,7 +1,6 @@
 import { sdk } from '../sdk'
 import { envFile } from '../file-models/env'
 import { mainnet, testnet } from '../utils'
-import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
 
 export const setNetwork = sdk.Action.withoutInput(
   // id
@@ -9,11 +8,12 @@ export const setNetwork = sdk.Action.withoutInput(
 
   // metadata
   async ({ effects }) => {
-    const [network, other] = await getNetworks(effects)
+    const { NETWORK } = (await envFile.read.const(effects))!
+    const other = NETWORK === 'mainnet' ? 'testnet' : 'mainnet'
 
     return {
       name: `Switch to ${other}`,
-      description: `Currently connected to ${network}. Run action to connect to ${other} instead`,
+      description: `Currently connected to ${NETWORK}. Run action to connect to ${other} instead`,
       warning: `Are you sure you want to switch to ${other}?`,
       allowedStatuses: 'only-running',
       group: null,
@@ -23,9 +23,16 @@ export const setNetwork = sdk.Action.withoutInput(
 
   // the execution function
   async ({ effects }) => {
-    const [network, other] = await getNetworks(effects)
+    const { NETWORK, BITCOIN_ZMQ_HOST } = (await envFile.read.const(effects))!
+    const other = NETWORK === 'mainnet' ? 'testnet' : 'mainnet'
 
-    await envFile.merge(effects, network === 'mainnet' ? testnet : mainnet)
+    const toSave: typeof mainnet | typeof testnet =
+      NETWORK === 'mainnet' ? testnet : mainnet
+
+    await envFile.merge(effects, {
+      ...toSave,
+      BITCOIN_ZMQ_HOST: BITCOIN_ZMQ_HOST ? toSave.BITCOIN_ZMQ_HOST : undefined,
+    })
 
     return {
       version: '1',
@@ -35,10 +42,3 @@ export const setNetwork = sdk.Action.withoutInput(
     }
   },
 )
-
-async function getNetworks(effects: Effects) {
-  const network = (await envFile.read.const(effects))?.NETWORK || 'mainnet'
-  const other = network === 'mainnet' ? 'testnet' : 'mainnet'
-
-  return [network, other]
-}
