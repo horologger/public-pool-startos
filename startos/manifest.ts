@@ -34,13 +34,13 @@ export const manifest = setupManifest({
     bitcoind: {
       description: 'Used to subscribe to new block events',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.2/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.3/bitcoind.s9pk',
     },
     'bitcoind-testnet': {
       description: 'Used to subscribe to new block events',
       optional: true,
       // @TODO replace with testnet when available
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.2/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.3/bitcoind.s9pk',
     },
   },
 })
