@@ -29,7 +29,7 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
     protocol: null,
     addSsl: null,
     preferredExternalPort: STRATUM_PORT,
-    secure: null,
+    secure: { ssl: false },
   })
   const stratum = sdk.createInterface(effects, {
     name: 'Stratum Server',
