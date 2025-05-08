@@ -6,6 +6,7 @@ import { versions } from './versions'
 import { actions } from './actions'
 import { envFile } from './file-models/env'
 import { envDefaults, getStratumIpv4Address } from './utils'
+import { store } from './file-models/store.json'
 
 // **** PreInstall ****
 const preInstall = sdk.setupPreInstall(async ({ effects }) => {
@@ -14,9 +15,9 @@ const preInstall = sdk.setupPreInstall(async ({ effects }) => {
 
 // **** PostInstall ****
 const postInstall = sdk.setupPostInstall(async ({ effects }) => {
-  const ipv4Address = await getStratumIpv4Address(effects)
-
-  sdk.store.setOwn(effects, sdk.StorePath.stratumDisplayAddress, ipv4Address)
+  await store.merge(effects, {
+    stratumDisplayAddress: await getStratumIpv4Address(effects),
+  })
 })
 
 // **** Uninstall ****

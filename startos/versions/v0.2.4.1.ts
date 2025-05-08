@@ -3,7 +3,7 @@ import { load } from 'js-yaml'
 import { envFile } from '../file-models/env'
 import { readFile, rmdir } from 'fs/promises'
 import { envDefaults, getStratumIpv4Address, mainnet, testnet } from '../utils'
-import { sdk } from '../sdk'
+import { store } from '../file-models/store.json'
 
 export const v_0_2_4_1 = VersionInfo.of({
   version: '0.2.4:1',
@@ -30,11 +30,7 @@ export const v_0_2_4_1 = VersionInfo.of({
           ...(type === 'mainnet' ? mainnet : testnet),
           POOL_IDENTIFIER,
         }),
-        sdk.store.setOwn(
-          effects,
-          sdk.StorePath.stratumDisplayAddress,
-          ipv4Address,
-        ),
+        store.merge(effects, { stratumDisplayAddress: ipv4Address }),
       ])
 
       // remove old start9 dir

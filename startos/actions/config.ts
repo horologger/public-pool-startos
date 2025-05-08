@@ -1,6 +1,7 @@
 import { sdk } from '../sdk'
 import { envFile } from '../file-models/env'
 import { utils } from '@start9labs/start-sdk'
+import { store } from '../file-models/store.json'
 
 const { InputSpec, Value } = sdk
 
@@ -58,9 +59,7 @@ export const config = sdk.Action.withInput(
   async ({ effects }) => ({
     POOL_IDENTIFIER: (await envFile.read.const(effects))?.POOL_IDENTIFIER,
     poolDisplayUrl:
-      (await sdk.store
-        .getOwn(effects, sdk.StorePath.stratumDisplayAddress)
-        .const()) || undefined,
+      (await store.read.const(effects))?.stratumDisplayAddress || undefined,
   }),
 
   // the execution function
@@ -69,11 +68,7 @@ export const config = sdk.Action.withInput(
       envFile.merge(effects, {
         POOL_IDENTIFIER: input.POOL_IDENTIFIER,
       }),
-      sdk.store.setOwn(
-        effects,
-        sdk.StorePath.stratumDisplayAddress,
-        input.poolDisplayUrl,
-      ),
+      store.merge(effects, { stratumDisplayAddress: input.poolDisplayUrl }),
     ])
   },
 )

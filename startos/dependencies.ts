@@ -25,6 +25,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     ? {
         bitcoind: {
           kind: 'running',
+          // @TODO remove "-0" when exver bug resolved
           versionRange: '>=28.1.0-0',
           healthChecks: ['synced'],
         },

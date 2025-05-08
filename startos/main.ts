@@ -60,6 +60,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   const url = await sdk.store
     .getOwn(effects, sdk.StorePath.stratumDisplayAddress)
     .const()
+
   await uiSub.exec([
     'sh',
     '-c',
