@@ -1,7 +1,6 @@
 import { sdk } from '../sdk'
 import { envFile } from '../file-models/env'
 import { utils } from '@start9labs/start-sdk'
-import { mainnet, testnet } from '../utils'
 
 const { InputSpec, Value } = sdk
 

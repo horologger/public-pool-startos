@@ -1,11 +1,5 @@
 import { matches, FileHelper } from '@start9labs/start-sdk'
-import {
-  dotenvToJson,
-  jsonToDotenv,
-  envDefaults,
-  mainnet,
-  testnet,
-} from '../utils'
+import { envDefaults, mainnet, testnet } from '../utils'
 
 const { object, string, literal, oneOf, allOf } = matches
 
@@ -62,7 +56,4 @@ const shape = allOf(
 
 export type EnvType = typeof shape._TYPE
 
-export const envFile = FileHelper.env(
-  '/media/startos/volumes/main/.env',
-  shape,
-)
+export const envFile = FileHelper.env('/media/startos/volumes/main/.env', shape)

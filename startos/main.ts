@@ -2,7 +2,6 @@ import { sdk } from './sdk'
 import { FileHelper, T } from '@start9labs/start-sdk'
 import { bitcoindMountpoint, envDefaults, uiPort } from './utils'
 import { envFile } from './file-models/env'
-import * as fs from 'node:fs/promises'
 
 export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
@@ -22,23 +21,33 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     effects,
     { imageId: 'public-pool' },
     sdk.Mounts.of()
-      .addVolume('main', env.NETWORK, '/public-pool/DB', false)
-      .addVolume('main', '.env', '/public-pool/.env', true)
-      .addDependency(
-        env.NETWORK === 'mainnet' ? 'bitcoind' : 'bitcoind-testnet',
-        'main',
-        'public',
-        bitcoindMountpoint,
-        true,
-      ),
+      .mountVolume({
+        volumeId: 'main',
+        subpath: env.NETWORK,
+        mountpoint: '/public-pool/DB',
+        readonly: false,
+      })
+      .mountVolume({
+        volumeId: 'main',
+        subpath: '.env',
+        mountpoint: '/public-pool/.env',
+        readonly: true,
+        type: 'file',
+      })
+      .mountDependency({
+        dependencyId:
+          env.NETWORK === 'mainnet' ? 'bitcoind' : 'bitcoind-testnet',
+        volumeId: 'main',
+        subpath: null,
+        mountpoint: bitcoindMountpoint,
+        readonly: true,
+      }),
     'stratum',
   )
 
-  // await FileHelper.string(`${stratumSub.rootfs}${bitcoindMountpoint}/.cookie`).const(effects)
-  
-  // copy .env to proper place
-  // @TODO while this puts .env in the "correct" location according to the upstream docs, it isn't recognized and the stratum server is never reachable as a result.
-  // await fs.cp(envFile.path, `${stratumSub.rootfs}/public-pool/.env`)
+  await FileHelper.string(
+    `${stratumSub.rootfs}${bitcoindMountpoint}/.cookie`,
+  ).read.const(effects)
 
   // ** UI subcontainer **
   const uiSub = await sdk.SubContainer.of(
@@ -75,10 +84,11 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   return sdk.Daemons.of(effects, started, additionalChecks)
     .addDaemon('stratum', {
       subcontainer: stratumSub,
-      command: ['/usr/local/bin/node', '/public-pool/dist/main.js'],
-      // env: Object.fromEntries(
-      //   Object.entries(env).map(([key, value]) => [key, String(value)]),
-      // ),
+      command: [
+        'sh',
+        '-c',
+        'cd /public-pool/ && /usr/local/bin/node dist/main.js',
+      ],
       ready: {
         display: 'Stratum Server',
         fn: () =>

@@ -15,7 +15,7 @@ export const setNetwork = sdk.Action.withoutInput(
       name: `Switch to ${other}`,
       description: `Currently connected to ${NETWORK}. Run action to connect to ${other} instead`,
       warning: `Are you sure you want to switch to ${other}?`,
-      allowedStatuses: 'only-running',
+      allowedStatuses: 'any',
       group: null,
       visibility: 'enabled',
     }
