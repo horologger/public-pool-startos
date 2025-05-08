@@ -1,7 +1,7 @@
 import { sdk } from './sdk'
 import { envDefaults, uiPort } from './utils'
 
-const { STRATUM_PORT } = envDefaults
+const STRATUM_PORT = Number(envDefaults.STRATUM_PORT)
 
 export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
   // ** UI Multi **

@@ -12,11 +12,9 @@ export const v_0_2_4_1 = VersionInfo.of({
     up: async ({ effects }) => {
       // get old config.yaml
       const {
-        'zmq-enabled': zmqEnabled,
         'pool-identifier': POOL_IDENTIFIER,
         bitcoind: { type },
       } = load(await readFile('/root/start9/config.yaml', 'utf-8')) as {
-        'zmq-enabled': boolean
         'pool-identifier': string
         bitcoind: {
           type: 'mainnet' | 'testnet'
@@ -30,11 +28,6 @@ export const v_0_2_4_1 = VersionInfo.of({
         envFile.write(effects, {
           ...envDefaults,
           ...(type === 'mainnet' ? mainnet : testnet),
-          BITCOIN_ZMQ_HOST: zmqEnabled
-            ? type === 'mainnet'
-              ? mainnet.BITCOIN_ZMQ_HOST
-              : testnet.BITCOIN_ZMQ_HOST
-            : undefined,
           POOL_IDENTIFIER,
         }),
         sdk.store.setOwn(

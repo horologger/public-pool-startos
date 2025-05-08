@@ -1,5 +1,5 @@
 import { sdk } from './sdk'
-import { T } from '@start9labs/start-sdk'
+import { FileHelper, T } from '@start9labs/start-sdk'
 import { bitcoindMountpoint, envDefaults, uiPort } from './utils'
 import { envFile } from './file-models/env'
 import * as fs from 'node:fs/promises'
@@ -23,8 +23,8 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     { imageId: 'public-pool' },
     sdk.Mounts.of()
       .addVolume('main', env.NETWORK, '/public-pool/DB', false)
+      .addVolume('main', '.env', '/public-pool/.env', true)
       .addDependency(
-        // @TODO watch bitcoind's .cookie file and re-run public-pool setupMain if it changes (bitcoind re-writes the .cookie file on restart) - but how?
         env.NETWORK === 'mainnet' ? 'bitcoind' : 'bitcoind-testnet',
         'main',
         'public',
@@ -33,9 +33,12 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       ),
     'stratum',
   )
+
+  // await FileHelper.string(`${stratumSub.rootfs}${bitcoindMountpoint}/.cookie`).const(effects)
+  
   // copy .env to proper place
   // @TODO while this puts .env in the "correct" location according to the upstream docs, it isn't recognized and the stratum server is never reachable as a result.
-  await fs.cp(envFile.path, `${stratumSub.rootfs}/public-pool/.env`)
+  // await fs.cp(envFile.path, `${stratumSub.rootfs}/public-pool/.env`)
 
   // ** UI subcontainer **
   const uiSub = await sdk.SubContainer.of(
@@ -73,15 +76,15 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addDaemon('stratum', {
       subcontainer: stratumSub,
       command: ['/usr/local/bin/node', '/public-pool/dist/main.js'],
-      env: Object.fromEntries(
-        Object.entries(env).map(([key, value]) => [key, String(value)]),
-      ),
+      // env: Object.fromEntries(
+      //   Object.entries(env).map(([key, value]) => [key, String(value)]),
+      // ),
       ready: {
         display: 'Stratum Server',
         fn: () =>
           sdk.healthCheck.checkPortListening(
             effects,
-            envDefaults.STRATUM_PORT,
+            Number(envDefaults.STRATUM_PORT),
             {
               successMessage: 'Stratum server is ready',
               errorMessage: 'Stratum server is not ready',

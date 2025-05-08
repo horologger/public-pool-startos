@@ -38,9 +38,9 @@ const shape = allOf(
       BITCOIN_RPC_COOKIEFILE: literal(
         mainnet.BITCOIN_RPC_COOKIEFILE,
       ).onMismatch(mainnet.BITCOIN_RPC_COOKIEFILE),
-      BITCOIN_ZMQ_HOST: literal(mainnet.BITCOIN_ZMQ_HOST)
-        .optional()
-        .onMismatch(mainnet.BITCOIN_ZMQ_HOST),
+      BITCOIN_ZMQ_HOST: literal(mainnet.BITCOIN_ZMQ_HOST).onMismatch(
+        mainnet.BITCOIN_ZMQ_HOST,
+      ),
     }),
     object({
       NETWORK: literal(testnet.NETWORK).onMismatch(testnet.NETWORK),
@@ -53,18 +53,16 @@ const shape = allOf(
       BITCOIN_RPC_COOKIEFILE: literal(
         testnet.BITCOIN_RPC_COOKIEFILE,
       ).onMismatch(testnet.BITCOIN_RPC_COOKIEFILE),
-      BITCOIN_ZMQ_HOST: literal(testnet.BITCOIN_ZMQ_HOST)
-        .optional()
-        .onMismatch(testnet.BITCOIN_ZMQ_HOST),
+      BITCOIN_ZMQ_HOST: literal(testnet.BITCOIN_ZMQ_HOST).onMismatch(
+        testnet.BITCOIN_ZMQ_HOST,
+      ),
     }),
   ).onMismatch(mainnet),
 )
 
 export type EnvType = typeof shape._TYPE
 
-export const envFile = FileHelper.raw(
-  '/media/startos/volumes/main/public-pool/.env',
-  jsonToDotenv<typeof shape._TYPE>,
-  dotenvToJson<typeof shape._TYPE>,
-  (obj) => shape.unsafeCast(obj),
+export const envFile = FileHelper.env(
+  '/media/startos/volumes/main/.env',
+  shape,
 )

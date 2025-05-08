@@ -6,12 +6,6 @@ import { mainnet, testnet } from '../utils'
 const { InputSpec, Value } = sdk
 
 export const inputSpec = InputSpec.of({
-  zmqEnabled: Value.toggle({
-    name: 'Enable ZeroMQ',
-    description:
-      'Recommended. Use ZeroMQ for new block notifications, this is generally faster than polling over RPC',
-    default: true,
-  }),
   POOL_IDENTIFIER: Value.text({
     name: 'Pool Identifier',
     description: 'The pool identifier to include in the Coinbase transactions',
@@ -62,27 +56,13 @@ export const config = sdk.Action.withInput(
   inputSpec,
 
   // optionally pre-fill the input form
-  async ({ effects }) => {
-    const env = await envFile.read.const(effects)
-
-    return {
-      ...env,
-      zmqEnabled: !!env?.BITCOIN_ZMQ_HOST,
-    }
-  },
+  async ({ effects }) => envFile.read.const(effects),
 
   // the execution function
   async ({ effects, input }) => {
-    const { NETWORK } = (await envFile.read.const(effects))!
-
     await Promise.all([
       envFile.merge(effects, {
         POOL_IDENTIFIER: input.POOL_IDENTIFIER,
-        BITCOIN_ZMQ_HOST: input.zmqEnabled
-          ? NETWORK === 'mainnet'
-            ? mainnet.BITCOIN_ZMQ_HOST
-            : testnet.BITCOIN_ZMQ_HOST
-          : undefined,
       }),
       sdk.store.setOwn(
         effects,

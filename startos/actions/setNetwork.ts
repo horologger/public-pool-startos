@@ -23,16 +23,10 @@ export const setNetwork = sdk.Action.withoutInput(
 
   // the execution function
   async ({ effects }) => {
-    const { NETWORK, BITCOIN_ZMQ_HOST } = (await envFile.read.const(effects))!
+    const { NETWORK } = (await envFile.read.const(effects))!
     const other = NETWORK === 'mainnet' ? 'testnet' : 'mainnet'
 
-    const toSave: typeof mainnet | typeof testnet =
-      NETWORK === 'mainnet' ? testnet : mainnet
-
-    await envFile.merge(effects, {
-      ...toSave,
-      BITCOIN_ZMQ_HOST: BITCOIN_ZMQ_HOST ? toSave.BITCOIN_ZMQ_HOST : undefined,
-    })
+    await envFile.merge(effects, NETWORK === 'mainnet' ? testnet : mainnet)
 
     return {
       version: '1',
