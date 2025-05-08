@@ -57,15 +57,14 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     'ui',
   )
   // set desired Stratum URL for display in the UI
-  sdk.store
+  const url = await sdk.store
     .getOwn(effects, sdk.StorePath.stratumDisplayAddress)
-    .onChange(async (url) => {
-      await uiSub.exec([
-        'sh',
-        '-c',
-        `sed -i "s/<Stratum URL>/${url}/" "$(find /var/www/html/main.*.js)"`,
-      ])
-    })
+    .const()
+  await uiSub.exec([
+    'sh',
+    '-c',
+    `sed -i "s/<Stratum URL>/${url}/" "$(find /var/www/html/main.*.js)"`,
+  ])
 
   /**
    * ======================== Additional Health Checks (optional) ========================
