@@ -2,6 +2,7 @@ import { sdk } from './sdk'
 import { FileHelper, T } from '@start9labs/start-sdk'
 import { bitcoindMountpoint, envDefaults, uiPort } from './utils'
 import { envFile } from './file-models/env'
+import { store } from './file-models/store.json'
 
 export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
@@ -57,9 +58,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     'ui',
   )
   // set desired Stratum URL for display in the UI
-  const url = await sdk.store
-    .getOwn(effects, sdk.StorePath.stratumDisplayAddress)
-    .const()
+  const url = (await store.read.const(effects))?.stratumDisplayAddress || ''
 
   await uiSub.exec([
     'sh',
