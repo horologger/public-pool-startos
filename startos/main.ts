@@ -15,7 +15,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   const depResult = await sdk.checkDependencies(effects)
   depResult.throwIfNotSatisfied()
 
-  const env = (await envFile.read.const(effects))!
+  const env = (await envFile.read().const(effects))!
 
   // ** Stratum subcontainer **
   const stratumSub = await sdk.SubContainer.of(
@@ -46,9 +46,9 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     'stratum',
   )
 
-  await FileHelper.string(
-    `${stratumSub.rootfs}${bitcoindMountpoint}/.cookie`,
-  ).read.const(effects)
+  await FileHelper.string(`${stratumSub.rootfs}${bitcoindMountpoint}/.cookie`)
+    .read()
+    .const(effects)
 
   // ** UI subcontainer **
   const uiSub = await sdk.SubContainer.of(
@@ -58,7 +58,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     'ui',
   )
   // set desired Stratum URL for display in the UI
-  const url = (await store.read.const(effects))?.stratumDisplayAddress || ''
+  const url = (await store.read().const(effects))?.stratumDisplayAddress || ''
 
   await uiSub.exec([
     'sh',

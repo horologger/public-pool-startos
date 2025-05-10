@@ -57,9 +57,9 @@ export const config = sdk.Action.withInput(
 
   // optionally pre-fill the input form
   async ({ effects }) => ({
-    POOL_IDENTIFIER: (await envFile.read.const(effects))?.POOL_IDENTIFIER,
+    POOL_IDENTIFIER: (await envFile.read().const(effects))?.POOL_IDENTIFIER,
     poolDisplayUrl:
-      (await store.read.const(effects))?.stratumDisplayAddress || undefined,
+      (await store.read().const(effects))?.stratumDisplayAddress || undefined,
   }),
 
   // the execution function

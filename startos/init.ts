@@ -1,5 +1,4 @@
 import { sdk } from './sdk'
-import { exposedStore, initStore } from './store'
 import { setDependencies } from './dependencies'
 import { setInterfaces } from './interfaces'
 import { versions } from './versions'
@@ -11,6 +10,7 @@ import { store } from './file-models/store.json'
 // **** PreInstall ****
 const preInstall = sdk.setupPreInstall(async ({ effects }) => {
   await envFile.write(effects, envDefaults)
+  await store.write(effects, { stratumDisplayAddress: null })
 })
 
 // **** PostInstall ****
@@ -34,6 +34,4 @@ export const { packageInit, packageUninit, containerInit } = sdk.setupInit(
   setInterfaces,
   setDependencies,
   actions,
-  initStore,
-  exposedStore,
 )

@@ -5,7 +5,7 @@ import { config as mainnetConfig } from 'bitcoind-startos/startos/actions/config
 import { config as testnetConfig } from 'bitcoind-startos/startos/actions/config/config'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
-  const { NETWORK, BITCOIN_ZMQ_HOST } = (await envFile.read.const(effects))!
+  const { NETWORK, BITCOIN_ZMQ_HOST } = (await envFile.read().const(effects))!
 
   if (BITCOIN_ZMQ_HOST) {
     await sdk.action.request(

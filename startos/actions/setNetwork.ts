@@ -8,7 +8,7 @@ export const setNetwork = sdk.Action.withoutInput(
 
   // metadata
   async ({ effects }) => {
-    const { NETWORK } = (await envFile.read.const(effects))!
+    const { NETWORK } = (await envFile.read().const(effects))!
     const other = NETWORK === 'mainnet' ? 'testnet' : 'mainnet'
 
     return {
@@ -23,7 +23,7 @@ export const setNetwork = sdk.Action.withoutInput(
 
   // the execution function
   async ({ effects }) => {
-    const { NETWORK } = (await envFile.read.const(effects))!
+    const { NETWORK } = (await envFile.read().const(effects))!
     const other = NETWORK === 'mainnet' ? 'testnet' : 'mainnet'
 
     await envFile.merge(effects, NETWORK === 'mainnet' ? testnet : mainnet)

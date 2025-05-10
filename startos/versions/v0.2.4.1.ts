@@ -6,7 +6,7 @@ import { envDefaults, getStratumIpv4Address, mainnet, testnet } from '../utils'
 import { store } from '../file-models/store.json'
 
 export const v_0_2_4_1 = VersionInfo.of({
-  version: '0.2.4:1',
+  version: '0.2.4:1-alpha.0',
   releaseNotes: 'Revamped for StartOS 0.4.0',
   migrations: {
     up: async ({ effects }) => {
