@@ -8,7 +8,11 @@ export const setNetwork = sdk.Action.withoutInput(
 
   // metadata
   async ({ effects }) => {
-    const { NETWORK } = (await envFile.read().const(effects))!
+    const NETWORK = await envFile.read((e) => e.NETWORK).const(effects)
+    if (!NETWORK) {
+      throw new Error('No NETWORK, cannot set action metadata')
+    }
+
     const other = NETWORK === 'mainnet' ? 'testnet' : 'mainnet'
 
     return {
