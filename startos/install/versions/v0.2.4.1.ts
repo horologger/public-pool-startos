@@ -1,9 +1,14 @@
 import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
 import { load } from 'js-yaml'
-import { envFile } from '../file-models/env'
+import { envFile } from '../../file-models/env'
 import { readFile, rmdir } from 'fs/promises'
-import { envDefaults, getStratumIpv4Address, mainnet, testnet } from '../utils'
-import { store } from '../file-models/store.json'
+import {
+  envDefaults,
+  getStratumIpv4Address,
+  mainnet,
+  testnet,
+} from '../../utils'
+import { store } from '../../file-models/store.json'
 
 export const v_0_2_4_1 = VersionInfo.of({
   version: '0.2.4:1-alpha.0',

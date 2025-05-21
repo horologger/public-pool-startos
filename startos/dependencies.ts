@@ -10,7 +10,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     throw new Error('No NETWORK, cannot set dependencies')
   }
 
-  await sdk.action.request(
+  await sdk.action.createTask(
     effects,
     NETWORK === 'mainnet' ? 'bitcoind' : 'bitcoind-testnet',
     NETWORK === 'mainnet' ? mainnetConfig : testnetConfig,
