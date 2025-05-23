@@ -90,6 +90,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       ],
       ready: {
         display: 'Stratum Server',
+        gracePeriod: 15_000,
         fn: () =>
           sdk.healthCheck.checkPortListening(
             effects,
