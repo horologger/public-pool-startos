@@ -6,6 +6,9 @@ const shape = object({
 })
 
 export const store = FileHelper.json(
-  '/media/startos/volumes/main/store.json',
+  {
+    volumeId: 'main',
+    subpath: '/store.json',
+  },
   shape,
 )

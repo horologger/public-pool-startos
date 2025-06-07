@@ -1,7 +1,7 @@
 import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
 import { load } from 'js-yaml'
 import { envFile } from '../../file-models/env'
-import { readFile, rmdir } from 'fs/promises'
+import { readFile, rm } from 'fs/promises'
 import {
   envDefaults,
   getStratumIpv4Address,
@@ -19,7 +19,12 @@ export const v_0_2_4_1 = VersionInfo.of({
       const {
         'pool-identifier': POOL_IDENTIFIER,
         bitcoind: { type },
-      } = load(await readFile('/root/start9/config.yaml', 'utf-8')) as {
+      } = load(
+        await readFile(
+          '/media/startos/volumes/main/start9/config.yaml',
+          'utf-8',
+        ),
+      ) as {
         'pool-identifier': string
         bitcoind: {
           type: 'mainnet' | 'testnet'
@@ -39,7 +44,9 @@ export const v_0_2_4_1 = VersionInfo.of({
       ])
 
       // remove old start9 dir
-      await rmdir('/data/start9')
+      await rm('/media/startos/volumes/main/start9', { recursive: true }).catch(
+        console.error,
+      )
     },
     down: IMPOSSIBLE,
   },

@@ -83,11 +83,13 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   return sdk.Daemons.of(effects, started, additionalChecks)
     .addDaemon('stratum', {
       subcontainer: stratumSub,
-      command: [
-        'sh',
-        '-c',
-        'cd /public-pool/ && /usr/local/bin/node dist/main.js',
-      ],
+      exec: {
+        command: [
+          'sh',
+          '-c',
+          'cd /public-pool/ && /usr/local/bin/node dist/main.js',
+        ],
+      },
       ready: {
         display: 'Stratum Server',
         gracePeriod: 15_000,
@@ -105,7 +107,9 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
     .addDaemon('ui', {
       subcontainer: uiSub,
-      command: ['nginx', '-g', 'daemon off;'],
+      exec: {
+        command: ['nginx', '-g', 'daemon off;'],
+      },
       ready: {
         display: 'Web Interface',
         fn: () =>

@@ -1,8 +1,8 @@
 import { envFile } from './file-models/env'
 import { sdk } from './sdk'
-import { config as mainnetConfig } from 'bitcoind-startos/startos/actions/config/config'
+import { config as mainnetConfig } from 'bitcoind-startos/startos/actions/config/other'
 // @TODO update testnet import when available
-import { config as testnetConfig } from 'bitcoind-startos/startos/actions/config/config'
+import { config as testnetConfig } from 'bitcoind-startos/startos/actions/config/other'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   const NETWORK = await envFile.read((e) => e.NETWORK).const(effects)
@@ -26,8 +26,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     ? {
         bitcoind: {
           kind: 'running',
-          // @TODO remove "-0" when exver bug resolved
-          versionRange: '^28.1.0-0',
+          versionRange: '^28.1.0',
           healthChecks: ['sync-progress'],
         },
       }
