@@ -1,7 +1,7 @@
 FROM node:20-bookworm-slim AS build
 
 # Public Pool repo does not use versions/tags yet, point directly to commit sha
-ARG PUBLIC_POOL_SHA=fd775965e5f90f0814302edee8690839af67a603
+ARG PUBLIC_POOL_SHA=b971e9ce4ccd23ae98536d57dcf63657ade7919f
 ARG PUBLIC_POOL_UI_SHA=00954f46866cc23c1b04d34a13ffb4f2cc8f9bbb
 
 RUN \
